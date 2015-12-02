@@ -19,7 +19,7 @@
                 controllerAs: 'vm',
                 data: {
                     permissions: {
-                        only: ['anonymous'],
+                        only: ['ANONYMOUS'],
                         redirectTo: 'auth.home'
                     },
                     bodyClass: 'login-content'

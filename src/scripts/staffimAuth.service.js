@@ -27,6 +27,7 @@
         service.isNotAuthorized = isNotAuthorized;
         service.requestAccessToken = requestAccessToken;
         service.isValidAccessToken = isValidAccessToken;
+        service.isAllowed = isAllowed;
 
         return service;
 
@@ -132,7 +133,10 @@
 
         function loadCredentials(force) {
             if (service.hasCredentials() && !force) {
-                return service.getCredentials();
+                var deferred = $q.defer();
+                deferred.resolve(service.getCredentials());
+
+                return deferred.promise;
             }
 
             return userModel.$find('current').$asPromise()
@@ -160,6 +164,25 @@
 
         function clearCredentials() {
             service.setCredentials(null);
+        }
+
+        function isAllowed(role) {
+            return service.isAuthorized()
+                .then(function() {
+                    var find = _.find(service.getCredentials().roles, function(currentRole) {
+                        return ('ROLE_' + role) === currentRole;
+                    });
+
+                    var deferred = $q.defer();
+
+                    if (find) {
+                        deferred.resolve();
+                    } else {
+                        deferred.reject();
+                    }
+
+                    return deferred.promise;
+                });
         }
     }
 })();
