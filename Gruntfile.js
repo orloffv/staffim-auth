@@ -11,6 +11,7 @@ module.exports = function(grunt) {
                     'src/scripts/staffimAuth.listener.js',
                     'src/scripts/staffimAuth.route.js',
                     'src/scripts/staffimAuth.service.js',
+                    'src/scripts/staffimAuth.tokenInterceptor.js',
                     'src/scripts/staffimAuth.interceptor.js',
                     'src/scripts/staffimAuth.stateEncoder.js',
                     'src/scripts/staffimAuth.jsonEncoder.js',

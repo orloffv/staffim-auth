@@ -1,34 +1,28 @@
 'use strict';
 (function() {
     angular.module('staffimAuth')
-        .config(accessTokenInterceptor);
+        .factory('SAhttpInterceptor', SAhttpInterceptor)
+        .config(setInterceptor);
 
-    accessTokenInterceptor.$inject = ['$httpProvider', 'jwtInterceptorProvider'];
-    function accessTokenInterceptor($httpProvider, jwtInterceptorProvider) {
-        jwtInterceptorProvider.urlParam = 'token';
-        jwtInterceptorProvider.tokenGetter = tokenGetter;
+    SAhttpInterceptor.$inject = ['$rootScope', 'SA_EVENTS', '$q'];
+    function SAhttpInterceptor($rootScope, SA_EVENTS, $q) {
+        var service = {};
 
-        tokenGetter.$inject = ['SAService', 'config', 'CONFIG'];
-        function tokenGetter(SAService, config, CONFIG) {
-            if (config.url.indexOf(CONFIG.apiUrl) !== 0) {
-                return null;
-            }
-            var accessToken = SAService.getAccessToken();
-            if (!accessToken) {
-                return false;
+        service.responseError = responseError;
+
+        return service;
+
+        function responseError(response) {
+            if (response.status === 401) {
+                $rootScope.$broadcast(SA_EVENTS.ACCESS_TOKEN_EXPIRED, response);
             }
 
-            if (!SAService.isValidAccessToken() && SAService.hasRefreshToken()) {
-                return SAService
-                    .requestRefreshToken()
-                    .then(function() {
-                        return SAService.getAccessToken();
-                    });
-            } else {
-                return accessToken;
-            }
+            return $q.reject(response);
         }
+    }
 
-        $httpProvider.interceptors.push('jwtInterceptor');
+    setInterceptor.$inject = ['$httpProvider'];
+    function setInterceptor($httpProvider) {
+        $httpProvider.interceptors.push('SAhttpInterceptor');
     }
 })();
