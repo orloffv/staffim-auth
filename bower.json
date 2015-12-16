@@ -1,0 +1,14 @@
+{
+  "name": "staffim-auth",
+  "main": "./dist/staffim-auth.js",
+  "ignore": [
+    "src",
+    ".gitignore",
+    "Gruntfile.js",
+    "package.json"
+  ],
+  "dependencies": {
+    "angular-permission": "1.1.1",
+    "angular": "latest"
+  }
+}
