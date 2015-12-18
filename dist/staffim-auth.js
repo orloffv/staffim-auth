@@ -483,7 +483,13 @@
         return directive;
 
         function link(scope, element, attrs) {
-            var stateConfig = getStateConfiguration(attrs.uiSref);
+            var state = attrs.uiSref;
+            if (!_.has(attrs, 'uiSref')) {
+                if (element.find('a[ui-sref]').length) {
+                    state = element.find('a').attr('ui-sref');
+                }
+            }
+            var stateConfig = getStateConfiguration(state);
 
             if (stateConfig.data && stateConfig.data.permissions)
             {
@@ -497,14 +503,14 @@
             }
         }
 
-        function getStateConfiguration(stateName){
+        function getStateConfiguration(stateName) {
             var states = $state.get();
             var stateConfiguration = states.filter(function (route) {
                 return (route.name === stateName);
             });
 
             if(stateConfiguration.length === 0) {
-                throw new Error('State is not defined in the router config');
+                throw new Error('State ' + stateName + ' is not defined in the router config');
             }
 
             return stateConfiguration[0];
