@@ -489,6 +489,9 @@
                     state = element.find('a').attr('ui-sref');
                 }
             }
+            if (state.indexOf('({') !== -1) {
+                state = state.substr(0, state.indexOf('({'));
+            }
             var stateConfig = getStateConfiguration(state);
 
             if (stateConfig.data && stateConfig.data.permissions)
