@@ -610,6 +610,30 @@
         }]);
 }());
 
+(function () {
+    'use strict';
+
+    angular
+        .module('staffimAuth')
+        .directive('saFormAutofillFix', function() {
+            return function(scope, elem, attrs) {
+                // Fixes Chrome bug: https://groups.google.com/forum/#!topic/angular/6NlucSskQjY
+                elem.prop('method', 'POST');
+
+                // Fix autofill issues where Angular doesn't know about autofilled inputs
+                if(attrs.ngSubmit) {
+                    setTimeout(function() {
+                        elem.unbind('submit').submit(function(e) {
+                            e.preventDefault();
+                            elem.find('input, textarea, select').trigger('input').trigger('change').trigger('keydown');
+                            scope.$apply(attrs.ngSubmit);
+                        });
+                    }, 0);
+                }
+            };
+        });
+}());
+
 angular.module('staffimAuth').run(['$templateCache', function($templateCache) {
   'use strict';
 
@@ -619,7 +643,7 @@ angular.module('staffimAuth').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('/staffim-auth/login.html',
-    "<form class=\"lc-block toggled\" ng-submit=\"vm.login(vm.credentials)\" onsubmit=\"return false;\" name=\"loginForm\">\n" +
+    "<form class=\"lc-block toggled\" ng-submit=\"vm.login(vm.credentials)\" onsubmit=\"return false;\" name=\"loginForm\" sa-form-autofill-fix>\n" +
     "    <div class=\"input-group m-b-20\">\n" +
     "        <span class=\"input-group-addon\"><i class=\"zmdi zmdi-account\"></i></span>\n" +
     "        <div class=\"fg-line\">\n" +
