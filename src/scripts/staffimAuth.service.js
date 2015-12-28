@@ -49,6 +49,8 @@
                     if (response.data) {
                         service.setAccessToken(response.data.token);
                     }
+
+                    return response;
                 });
         }
 
