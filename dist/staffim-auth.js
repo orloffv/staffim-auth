@@ -21,8 +21,8 @@
     angular.module('staffimAuth')
         .controller('SALoginController', SALoginController);
 
-    SALoginController.$inject = ['SAService', '$state', '$stateParams'];
-    function SALoginController(SAService, $state, $stateParams) {
+    SALoginController.$inject = ['SAService', '$state'];
+    function SALoginController(SAService, $state) {
         var vm = this;
         vm.credentials = {
             username: '',
@@ -34,7 +34,7 @@
             return SAService
                 .login(credentials.username, credentials.password)
                 .then(function() {
-                    return $state.go($state.current, $stateParams, {reload: true});
+                    return $state.go('auth.home');
                 })
                 .catch(function() {
                     vm.credentials = {
