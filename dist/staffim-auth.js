@@ -139,8 +139,8 @@
     angular.module('staffimAuth')
         .factory('SAService', SAService);
 
-    SAService.$inject = ['$http', '$rootScope', 'store', '$q', 'jQuery', 'jwtHelper', 'CONFIG', 'userModel'];
-    function SAService($http, $rootScope, store, $q, jQuery, jwtHelper, CONFIG, userModel) {
+    SAService.$inject = ['$http', '$rootScope', 'store', '$q', 'jQuery', 'jwtHelper', 'CONFIG', 'userModel', '$injector'];
+    function SAService($http, $rootScope, store, $q, jQuery, jwtHelper, CONFIG, userModel, $injector) {
         var service = {},
             credentials;
 
@@ -277,8 +277,17 @@
                 return deferred.promise;
             }
 
-            return userModel.$find('current').$asPromise()
+            var currentParams = {};
+            if (userModel.getDefaultRelations) {
+                currentParams['relations[]'] = userModel.getDefaultRelations();
+            }
+
+            return userModel.$find('current', currentParams).$asPromise()
                 .then(function(data) {
+                    if (data.getModelName && data.getModelName()) {
+                        var injectorModel = $injector.get(data.getModelName());
+                        data = injectorModel.$build().$decode(data.$response.data);
+                    }
                     service.setCredentials(data);
 
                     return data;
