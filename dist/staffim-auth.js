@@ -139,8 +139,8 @@
     angular.module('staffimAuth')
         .factory('SAService', SAService);
 
-    SAService.$inject = ['$http', '$rootScope', 'store', '$q', 'jQuery', 'jwtHelper', 'CONFIG', 'userModel', '$injector'];
-    function SAService($http, $rootScope, store, $q, jQuery, jwtHelper, CONFIG, userModel, $injector) {
+    SAService.$inject = ['$http', '$rootScope', 'store', '$q', 'jQuery', 'jwtHelper', 'CONFIG', 'userModel', '$injector', 'SUAnalytic'];
+    function SAService($http, $rootScope, store, $q, jQuery, jwtHelper, CONFIG, userModel, $injector, SUAnalytic) {
         var service = {},
             credentials;
 
@@ -289,6 +289,9 @@
                         data = injectorModel.$build().$decode(data.$response.data);
                     }
                     service.setCredentials(data);
+                    if (userModel.getAnalyticInitData) {
+                        SUAnalytic.init(userModel.getAnalyticInitData());
+                    }
 
                     return data;
                 });
