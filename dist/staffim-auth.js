@@ -667,6 +667,7 @@ angular.module('staffimAuth').run(['$templateCache', function($templateCache) {
     "        <span class=\"input-group-addon\"><i class=\"zmdi zmdi-account\"></i></span>\n" +
     "        <div class=\"fg-line\">\n" +
     "            <input type=\"email\" name=\"username\" class=\"form-control\" placeholder=\"E-mail\" autofocus autofill ng-model=\"vm.credentials.username\" required>\n" +
+    "            <label class=\"line-focus\"></label>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
@@ -674,6 +675,7 @@ angular.module('staffimAuth').run(['$templateCache', function($templateCache) {
     "        <span class=\"input-group-addon\"><i class=\"zmdi zmdi-male\"></i></span>\n" +
     "        <div class=\"fg-line\">\n" +
     "            <input type=\"password\" name=\"password\" class=\"form-control\" placeholder=\"Пароль\" autofill ng-model=\"vm.credentials.password\" required>\n" +
+    "            <label class=\"line-focus\"></label>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
