@@ -139,8 +139,8 @@
     angular.module('staffimAuth')
         .factory('SAService', SAService);
 
-    SAService.$inject = ['$http', '$rootScope', 'store', '$q', 'jQuery', 'jwtHelper', 'CONFIG', 'userModel', '$injector', 'SUAnalytic'];
-    function SAService($http, $rootScope, store, $q, jQuery, jwtHelper, CONFIG, userModel, $injector, SUAnalytic) {
+    SAService.$inject = ['$http', '$rootScope', 'store', '$q', 'jQuery', 'jwtHelper', 'CONFIG', 'userModel', '$injector', 'SUAnalytic', 'SULogger'];
+    function SAService($http, $rootScope, store, $q, jQuery, jwtHelper, CONFIG, userModel, $injector, SUAnalytic, SULogger) {
         var service = {},
             credentials;
 
@@ -164,6 +164,7 @@
         service.requestAccessToken = requestAccessToken;
         service.isValidAccessToken = isValidAccessToken;
         service.isAllowed = isAllowed;
+        service.getCredentialsAnalyticInitData = getCredentialsAnalyticInitData;
 
         return service;
 
@@ -289,12 +290,20 @@
                         data = injectorModel.$build().$decode(data.$response.data);
                     }
                     service.setCredentials(data);
-                    if (userModel.getAnalyticInitData) {
-                        SUAnalytic.init(userModel.getAnalyticInitData());
-                    }
+                    SUAnalytic.init(service.getCredentialsAnalyticInitData());
+                    SULogger.init(service.getCredentialsAnalyticInitData());
 
                     return data;
                 });
+        }
+
+        function getCredentialsAnalyticInitData() {
+            var credentials = this.getCredentials();
+            if (credentials && credentials.getAnalyticInitData) {
+                return credentials.getAnalyticInitData();
+            }
+
+            return {};
         }
 
         function getCredentials() {
