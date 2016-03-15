@@ -19,7 +19,9 @@
 'use strict';
 (function() {
     angular.module('staffimAuth')
-        .controller('SALoginController', SALoginController);
+        .controller('SALoginController', SALoginController)
+        .controller('SARecoveryController', SARecoveryController)
+        .controller('SARecoveryPasswordController', SARecoveryPasswordController);
 
     SALoginController.$inject = ['SAService', '$state', 'toastr'];
     function SALoginController(SAService, $state, toastr) {
@@ -33,17 +35,76 @@
         function login(credentials) {
             return SAService
                 .login(credentials.username, credentials.password)
-                .then(function() {
-                    return $state.go('auth.home');
-                },
-                function() {
-                    toastr.error('Не удалось войти. Неверные данные для входа');
+                .then(
+                    function() {
+                        return $state.go('auth.home');
+                    },
+                    function() {
+                        toastr.error('Не удалось войти. Неверные данные для входа');
 
-                    vm.credentials = {
-                        username: credentials.username,
-                        password: credentials.password
-                    };
-                });
+                        vm.credentials = {
+                            username: credentials.username,
+                            password: credentials.password
+                        };
+                    }
+                );
+        }
+    }
+
+    SARecoveryController.$inject = ['SAService', '$state', 'toastr'];
+    function SARecoveryController(SAService, $state, toastr) {
+        var vm = this;
+        vm.credentials = {
+            username: ''
+        };
+        vm.recovery = recovery;
+
+        function recovery(credentials) {
+            return SAService
+                .recovery(credentials.username)
+                .then(
+                    function() {
+                        toastr.success('Инструкция по восстановлению пароля отправлена вам на электронную почту');
+
+                        return $state.go('public.login');
+                    },
+                    function() {
+                        toastr.error('Не удалось отправить письмо для восстановления пароля');
+
+                        vm.credentials = {
+                            username: credentials.username
+                        };
+                    }
+                );
+        }
+    }
+
+    SARecoveryPasswordController.$inject = ['SAService', '$state', 'toastr', 'recovery'];
+    function SARecoveryPasswordController(SAService, $state, toastr, recovery) {
+        var vm = this;
+        vm.credentials = {
+            password: ''
+        };
+        vm.recovery = recovery;
+        vm.recoveryPassword = recoveryPassword;
+
+        function recoveryPassword(credentials) {
+            return SAService
+                .recoveryPassword(recovery.id, credentials.password)
+                .then(
+                    function() {
+                        toastr.success('Пароль успешно изменен');
+
+                        return $state.go('public.login');
+                    },
+                    function() {
+                        toastr.error('Не удалось изменить пароль');
+
+                        vm.credentials = {
+                            password: credentials.password
+                        };
+                    }
+                );
         }
     }
 })();
@@ -86,6 +147,49 @@
                 templateUrl: '/staffim-auth/login.html',
                 controller: 'SALoginController',
                 controllerAs: 'vm',
+                data: {
+                    permissions: {
+                        only: ['ANONYMOUS'],
+                        redirectTo: 'auth.home'
+                    },
+                    bodyClass: 'login-content'
+                }
+            })
+            .state('public.recovery', {
+                title: 'Восстановление пароля',
+                url: '/recovery',
+                templateUrl: '/staffim-auth/recovery.html',
+                controller: 'SARecoveryController',
+                controllerAs: 'vm',
+                data: {
+                    permissions: {
+                        only: ['ANONYMOUS'],
+                        redirectTo: 'auth.home'
+                    },
+                    bodyClass: 'login-content'
+                }
+            })
+            .state('public.recovery_password', {
+                title: 'Изменение пароля',
+                url: '/recovery/{recovery:[0-9a-fA-F]{24}}',
+                templateUrl: '/staffim-auth/recoveryPassword.html',
+                controller: 'SARecoveryPasswordController',
+                controllerAs: 'vm',
+                resolve: {
+                    recovery: ['SAService', '$q', '$stateParams', function(SAService, $q, $stateParams) {
+                        var deferred = $q.defer();
+
+                        SAService.loadRecovery($stateParams.recovery)
+                            .then(function() {
+                                deferred.resolve({id: $stateParams.recovery, valid: true});
+                            })
+                            .catch(function() {
+                                deferred.resolve({id: $stateParams.recovery, valid: false});
+                            });
+
+                        return deferred.promise;
+                    }]
+                },
                 data: {
                     permissions: {
                         only: ['ANONYMOUS'],
@@ -151,6 +255,9 @@
         service.setCredentials = setCredentials;
 
         service.login = login;
+        service.recovery = recovery;
+        service.loadRecovery = loadRecovery;
+        service.recoveryPassword = recoveryPassword;
         service.logout = logout;
         service.hasAccessToken = hasAccessToken;
         service.getAccessToken = getAccessToken;
@@ -170,6 +277,36 @@
 
         function login(username, password) {
             return service.requestAccessToken(username, password);
+        }
+
+        function loadRecovery(recoveryId) {
+            return $http.get(
+                CONFIG.apiUrl + '/password_recovery/' + recoveryId,
+                {
+                    skipAuthorization: true
+                });
+        }
+
+        function recovery(username) {
+            return $http.post(
+                CONFIG.apiUrl + '/password_recovery',
+                {
+                    email: username
+                },
+                {
+                    skipAuthorization: true
+                });
+        }
+
+        function recoveryPassword(recoveryId, password) {
+            return $http.post(
+                CONFIG.apiUrl + '/password_recovery/' + recoveryId,
+                {
+                    password: password
+                },
+                {
+                    skipAuthorization: true
+                });
         }
 
         function requestAccessToken(username, password) {
@@ -683,6 +820,60 @@ angular.module('staffimAuth').run(['$templateCache', function($templateCache) {
     "    <button class=\"btn btn-login btn-danger btn-float\" ng-disabled=\"loginForm.$invalid\" type=\"submit\">\n" +
     "        <i class=\"zmdi zmdi-arrow-forward\"></i>\n" +
     "    </button>\n" +
+    "    <div class=\"login-navigation\">\n" +
+    "        <a ui-sref=\"public.recovery\" class=\"btn btn-sm btn-link\">Забыли пароль?</a>\n" +
+    "    </div>\n" +
+    "</form>\n"
+  );
+
+
+  $templateCache.put('/staffim-auth/recovery.html',
+    "<form class=\"lc-block toggled\" ng-submit=\"vm.recovery(vm.credentials)\" name=\"recoveryForm\">\n" +
+    "    <p class=\"text-left\" style=\"margin-bottom: 19px;\">\n" +
+    "        Введите свой адрес электронной почты ниже, чтобы сбросить пароль\n" +
+    "    </p>\n" +
+    "    <div class=\"input-group m-b-20\">\n" +
+    "        <span class=\"input-group-addon\"><i class=\"zmdi zmdi-account\"></i></span>\n" +
+    "        <div class=\"fg-line\">\n" +
+    "            <input type=\"email\" name=\"username\" class=\"form-control\" placeholder=\"E-mail\" autofocus ng-model=\"vm.credentials.username\" required>\n" +
+    "            <label class=\"line-focus\"></label>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "    <div class=\"clearfix\"></div>\n" +
+    "    <button class=\"btn btn-login btn-danger btn-float\" ng-disabled=\"recoveryForm.$invalid\" type=\"submit\">\n" +
+    "        <i class=\"zmdi zmdi-arrow-forward\"></i>\n" +
+    "    </button>\n" +
+    "    <div class=\"login-navigation\">\n" +
+    "        <a ui-sref=\"public.login\" class=\"btn btn-sm btn-link\">Войти</a>\n" +
+    "    </div>\n" +
+    "</form>\n"
+  );
+
+
+  $templateCache.put('/staffim-auth/recoveryPassword.html',
+    "<form class=\"lc-block toggled\" ng-submit=\"vm.recoveryPassword(vm.credentials)\" name=\"recoveryPasswordForm\">\n" +
+    "    <div ng-if=\"!vm.recovery.valid\">\n" +
+    "        <p>Ссылка не действительна. Попробуйте отправить повторный запрос на восстановление пароля</p>\n" +
+    "    </div>\n" +
+    "    <div ng-if=\"vm.recovery.valid\">\n" +
+    "        <p class=\"text-left\" style=\"margin-bottom: 19px;\">\n" +
+    "            Введите новый пароль\n" +
+    "        </p>\n" +
+    "        <div class=\"input-group m-b-20\">\n" +
+    "            <span class=\"input-group-addon\"><i class=\"zmdi zmdi-male\"></i></span>\n" +
+    "            <div class=\"fg-line\">\n" +
+    "                <input type=\"password\" name=\"password\" class=\"form-control\" placeholder=\"Пароль\" autofill ng-model=\"vm.credentials.password\" required>\n" +
+    "                <label class=\"line-focus\"></label>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"clearfix\"></div>\n" +
+    "        <button class=\"btn btn-login btn-danger btn-float\" ng-disabled=\"recoveryPasswordForm.$invalid\" type=\"submit\">\n" +
+    "            <i class=\"zmdi zmdi-arrow-forward\"></i>\n" +
+    "        </button>\n" +
+    "    </div>\n" +
+    "    <div class=\"login-navigation\">\n" +
+    "        <a ui-sref=\"public.login\" class=\"btn btn-sm btn-link\">Войти</a>\n" +
+    "    </div>\n" +
     "</form>\n"
   );
 

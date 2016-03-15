@@ -1,0 +1,19 @@
+<form class="lc-block toggled" ng-submit="vm.recovery(vm.credentials)" name="recoveryForm">
+    <p class="text-left" style="margin-bottom: 19px;">
+        Введите свой адрес электронной почты ниже, чтобы сбросить пароль
+    </p>
+    <div class="input-group m-b-20">
+        <span class="input-group-addon"><i class="zmdi zmdi-account"></i></span>
+        <div class="fg-line">
+            <input type="email" name="username" class="form-control" placeholder="E-mail" autofocus ng-model="vm.credentials.username" required>
+            <label class="line-focus"></label>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <button class="btn btn-login btn-danger btn-float" ng-disabled="recoveryForm.$invalid" type="submit">
+        <i class="zmdi zmdi-arrow-forward"></i>
+    </button>
+    <div class="login-navigation">
+        <a ui-sref="public.login" class="btn btn-sm btn-link">Войти</a>
+    </div>
+</form>

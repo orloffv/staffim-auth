@@ -25,6 +25,49 @@
                     bodyClass: 'login-content'
                 }
             })
+            .state('public.recovery', {
+                title: 'Восстановление пароля',
+                url: '/recovery',
+                templateUrl: '/staffim-auth/recovery.html',
+                controller: 'SARecoveryController',
+                controllerAs: 'vm',
+                data: {
+                    permissions: {
+                        only: ['ANONYMOUS'],
+                        redirectTo: 'auth.home'
+                    },
+                    bodyClass: 'login-content'
+                }
+            })
+            .state('public.recovery_password', {
+                title: 'Изменение пароля',
+                url: '/recovery/{recovery:[0-9a-fA-F]{24}}',
+                templateUrl: '/staffim-auth/recoveryPassword.html',
+                controller: 'SARecoveryPasswordController',
+                controllerAs: 'vm',
+                resolve: {
+                    recovery: ['SAService', '$q', '$stateParams', function(SAService, $q, $stateParams) {
+                        var deferred = $q.defer();
+
+                        SAService.loadRecovery($stateParams.recovery)
+                            .then(function() {
+                                deferred.resolve({id: $stateParams.recovery, valid: true});
+                            })
+                            .catch(function() {
+                                deferred.resolve({id: $stateParams.recovery, valid: false});
+                            });
+
+                        return deferred.promise;
+                    }]
+                },
+                data: {
+                    permissions: {
+                        only: ['ANONYMOUS'],
+                        redirectTo: 'auth.home'
+                    },
+                    bodyClass: 'login-content'
+                }
+            })
         ;
 
         $urlRouterProvider.when('/logout', logoutRoute);

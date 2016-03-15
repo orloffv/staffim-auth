@@ -15,6 +15,9 @@
         service.setCredentials = setCredentials;
 
         service.login = login;
+        service.recovery = recovery;
+        service.loadRecovery = loadRecovery;
+        service.recoveryPassword = recoveryPassword;
         service.logout = logout;
         service.hasAccessToken = hasAccessToken;
         service.getAccessToken = getAccessToken;
@@ -34,6 +37,36 @@
 
         function login(username, password) {
             return service.requestAccessToken(username, password);
+        }
+
+        function loadRecovery(recoveryId) {
+            return $http.get(
+                CONFIG.apiUrl + '/password_recovery/' + recoveryId,
+                {
+                    skipAuthorization: true
+                });
+        }
+
+        function recovery(username) {
+            return $http.post(
+                CONFIG.apiUrl + '/password_recovery',
+                {
+                    email: username
+                },
+                {
+                    skipAuthorization: true
+                });
+        }
+
+        function recoveryPassword(recoveryId, password) {
+            return $http.post(
+                CONFIG.apiUrl + '/password_recovery/' + recoveryId,
+                {
+                    password: password
+                },
+                {
+                    skipAuthorization: true
+                });
         }
 
         function requestAccessToken(username, password) {
