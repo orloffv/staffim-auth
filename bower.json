@@ -12,7 +12,6 @@
     "angular-jwt": "~0.0.9",
     "angular-ui-router": "0.2.15",
     "a0-angular-storage": "~0.0.12",
-    "angular-cookies": "~1.4.7",
     "angular": "latest"
   }
 }
