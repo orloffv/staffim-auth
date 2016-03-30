@@ -416,8 +416,8 @@
             }
 
             var currentParams = {};
-            if (userModel.getDefaultRelations) {
-                currentParams['relations[]'] = userModel.getDefaultRelations();
+            if (userModel.getDefaultParams) {
+                currentParams = userModel.getDefaultParams();
             }
 
             return userModel.$find('current', currentParams).$asPromise()
