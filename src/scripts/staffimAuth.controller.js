@@ -5,8 +5,8 @@
         .controller('SARecoveryController', SARecoveryController)
         .controller('SARecoveryPasswordController', SARecoveryPasswordController);
 
-    SALoginController.$inject = ['SAService', '$state', 'toastr'];
-    function SALoginController(SAService, $state, toastr) {
+    SALoginController.$inject = ['SAService', '$state', 'SUNotify'];
+    function SALoginController(SAService, $state, SUNotify) {
         var vm = this;
         vm.credentials = {
             username: '',
@@ -22,7 +22,7 @@
                         return $state.go('auth.home');
                     },
                     function() {
-                        toastr.error('Не удалось войти. Неверные данные для входа');
+                        SUNotify.error('Не удалось войти. Неверные данные для входа');
 
                         vm.credentials = {
                             username: credentials.username,
@@ -33,8 +33,8 @@
         }
     }
 
-    SARecoveryController.$inject = ['SAService', '$state', 'toastr'];
-    function SARecoveryController(SAService, $state, toastr) {
+    SARecoveryController.$inject = ['SAService', '$state', 'SUNotify'];
+    function SARecoveryController(SAService, $state, SUNotify) {
         var vm = this;
         vm.credentials = {
             username: ''
@@ -46,12 +46,12 @@
                 .recovery(credentials.username)
                 .then(
                     function() {
-                        toastr.success('Инструкция по восстановлению пароля отправлена вам на электронную почту');
+                        SUNotify.success('Инструкция по восстановлению пароля отправлена вам на электронную почту');
 
                         return $state.go('public.login');
                     },
                     function() {
-                        toastr.error('Не удалось отправить письмо для восстановления пароля');
+                        SUNotify.error('Не удалось отправить письмо для восстановления пароля');
 
                         vm.credentials = {
                             username: credentials.username
@@ -61,8 +61,8 @@
         }
     }
 
-    SARecoveryPasswordController.$inject = ['SAService', '$state', 'toastr', 'recovery'];
-    function SARecoveryPasswordController(SAService, $state, toastr, recovery) {
+    SARecoveryPasswordController.$inject = ['SAService', '$state', 'SUNotify', 'recovery'];
+    function SARecoveryPasswordController(SAService, $state, SUNotify, recovery) {
         var vm = this;
         vm.credentials = {
             password: ''
@@ -75,12 +75,12 @@
                 .recoveryPassword(recovery.id, credentials.password)
                 .then(
                     function() {
-                        toastr.success('Пароль успешно изменен');
+                        SUNotify.success('Пароль успешно изменен');
 
                         return $state.go('public.login');
                     },
                     function() {
-                        toastr.error('Не удалось изменить пароль');
+                        SUNotify.error('Не удалось изменить пароль');
 
                         vm.credentials = {
                             password: credentials.password
