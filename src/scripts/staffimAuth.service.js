@@ -167,7 +167,7 @@
             service.clearCredentials();
         }
 
-        function loadCredentials(force) {
+        function loadCredentials(force, params) {
             if (service.hasCredentials() && !force) {
                 var deferred = $q.defer();
                 deferred.resolve(service.getCredentials());
@@ -176,7 +176,9 @@
             }
 
             var currentParams = {};
-            if (userModel.getDefaultParams) {
+            if (!_.isUndefined(params)) {
+                currentParams = params;
+            } else if (userModel.getDefaultParams) {
                 currentParams = userModel.getDefaultParams();
             }
 
