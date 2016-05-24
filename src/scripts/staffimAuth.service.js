@@ -193,6 +193,11 @@
                     SULogger.init(service.getCredentialsAnalyticInitData());
 
                     return data;
+                })
+                .catch(function(errorResponse) {
+                    service.logout();
+
+                    return $q.reject(errorResponse);
                 });
         }
 
