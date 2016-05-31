@@ -220,9 +220,11 @@
 
         function setCredentials(data) {
             credentials = data;
-            $rootScope.globals = {
-                credentials: credentials
-            };
+            if (!$rootScope.globals) {
+                $rootScope.globals = {};
+            }
+
+            $rootScope.globals.credentials = credentials;
         }
 
         function clearCredentials() {
