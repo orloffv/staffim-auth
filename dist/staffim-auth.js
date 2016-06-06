@@ -39,9 +39,13 @@
                     function() {
                         return $state.go('auth.home');
                     },
-                    function() {
-                        SUNotify.error('Не удалось войти. Неверные данные для входа');
-
+                    function(response) {
+                        if (response.status !== 401) {
+                            SUNotify.error('Не удалось войти. Неверные данные для входа');
+                        } else {
+                            SUNotify.error('Сервер недоступен, попробуйте позднее');
+                        }
+                        
                         vm.credentials = {
                             username: credentials.username,
                             password: credentials.password
